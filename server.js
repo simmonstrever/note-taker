@@ -1,25 +1,20 @@
+//Dependencies
 const express = require("express");
-const db = require("./db/db.json");
-const fs = require("fs")
-const path = require("path");
 
+
+//Sets up express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+//express middleware prepares app for parsing our data
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+//assigns a static directory to the public directory telling rxpress to look inside the directory specified before checking other routes
 app.use(express.static("public"));
 
+// the (app) at the end of each require threads the app object through to the routes allowing us to use the methods below.
 require("./routing/api-route")(app);
 require("./routing/html-route")(app);
-
-// app.get("/notes", function (req, res) {
-//     res.sendFile(path.join(__dirname, "../public/notes.html"));
-// });
-
-// app.get("*", function (req, res) {
-//     res.sendFile(path.join(__dirname, "../public/index.html"))
-// });
 
 
 app.listen(PORT, function () {
