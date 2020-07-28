@@ -7,7 +7,10 @@ console.log(shortid.generate());
 module.exports = function (app) {
     //GET's all saved notes
     app.get("/api/notes", function (req, res) {
-        res.send(db);
+        fs.readFile("./db/db.json", "utf8", (err, data) => {
+            if (err) throw err;
+            return res.json(db)
+        })
     });
 
     //POST for creating or editing a new or existing note
@@ -15,20 +18,24 @@ module.exports = function (app) {
 
         //1) create new ID
         let uniqueID = shortid.generate();
+        
 
         //2) Attatch new ID onto newnote
-        let note = {
-            id: uniqueID
+        let newNote = {
+            id: uniqueID,
+            title: req.body.title,
+            text: req.body.text
         }
+        console.log(newNote);
 
         //3) attatch new note to notes document (fswritefile)
         fs.readFile("./db/db.json", "utf8", (err, data) => {
             if (err) throw err;
-
             const noteDirectory = JSON.parse(data);
-            noteDirectory.push(note);
+            console.log(noteDirectory)
+            noteDirectory.push(newNote);
 
-            fs.writeFile("./db/db.json", JSON.stringify(noteDirectory, null, 2), err => {
+            fs.writeFileSync("./db/db.json", JSON.stringify(noteDirectory, null, 2), err => {
                 if (err) throw err;
                 res.send(db);
                 console.log("success")
@@ -40,11 +47,18 @@ module.exports = function (app) {
     app.delete("/api/notes/:id", (req, res) => {
 
         //1) retrieve all notes
+        let uniqueID = req.params.id;
 
-        //2) filter all notes via note ID or title
-        //3) rewrite file for all notes
+        fs.readFile("./db/db.json", "utf8", (err, data) => {
+            if (err) throw err;
 
-
-
-    })
+            const noteDirectory = JSON.parse(data);
+            const updatedNotes = noteDirectory.filter(note => note.id != uniqueID);
+            fs.writeFile("./db/db.json", JSON.stringify(updatedNotes, null, 2), err => {
+                if (err) throw err;
+                res.send(db);
+                console.log("Note Gone!!")
+            });
+        });
+    });
 };
